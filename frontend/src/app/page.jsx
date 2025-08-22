@@ -15,31 +15,47 @@ export default function Home() {
 
   useEffect(() => {
     const runSearch = async () => {
-      await submitSearch();
+      await submitSearch({
+        q: "",
+        query_by: "title",
+        sort_by: "average_rating:desc",
+        page: 1,
+      });
     };
     runSearch();
   }, []);
 
-  const submitSearch = async () => {
+  const submitSearch = async (searchParams, isSuggestedResults = false) => {
+    const returnedResults = await submitSearchQuery(searchParams);
+    if (returnedResults.success) {
+      if (isSuggestedResults) {
+        setSearchSuggestedResults({
+          ...returnedResults,
+          page_max: Math.ceil(returnedResults.found / 10),
+        });
+      } else {
+        setSearchPage(1);
+        setSearchResults({
+          ...returnedResults,
+          page_max: Math.ceil(returnedResults.found / 10),
+        });
+      }
+    }
+  };
+
+  const handleClickSearch = async () => {
     const searchParams = {
       q: searchQuery,
       query_by: "title",
       sort_by: "average_rating:desc",
-      page: searchPage,
+      page: 1,
+      per_page: 10,
     };
-    const returnedResults = await submitSearchQuery(searchParams);
-    if (returnedResults.success) {
-      setSearchPage(1);
-      setSearchResults({
-        ...returnedResults,
-        page_max: Math.ceil(returnedResults.found / 10),
-      });
-    }
+    await submitSearch(searchParams);
   };
 
   const handleChangeSearch = async (e) => {
     setSearchQuery(e.target.value);
-    // run search query
     const searchParams = {
       q: e.target.value,
       query_by: "title",
@@ -48,14 +64,7 @@ export default function Home() {
       per_page: 5,
       prefix: true,
     };
-    const returnedResults = await submitSearchQuery(searchParams);
-    console.log("returnedResults:", returnedResults);
-    if (returnedResults.success) {
-      setSearchSuggestedResults({
-        ...returnedResults,
-        page_max: Math.ceil(returnedResults.found / 10),
-      });
-    }
+    await submitSearch(searchParams, true);
   };
 
   const handleClickSuggestion = async (queryTitle) => {
@@ -68,14 +77,7 @@ export default function Home() {
       sort_by: "average_rating:desc",
       page: 1,
     };
-    const returnedResults = await submitSearchQuery(searchParams);
-    if (returnedResults.success) {
-      setSearchPage(1);
-      setSearchResults({
-        ...returnedResults,
-        page_max: Math.ceil(returnedResults.found / 10),
-      });
-    }
+    await submitSearch(searchParams);
   };
 
   const previousPage = async () => {
@@ -89,14 +91,9 @@ export default function Home() {
       sort_by: "average_rating:desc",
       page: searchPage - 1,
     };
-    const returnedResults = await submitSearchQuery(searchParams);
-    if (returnedResults.success) {
-      setSearchResults({
-        ...returnedResults,
-        page_max: Math.ceil(returnedResults.found / 10),
-      });
-    }
+    await submitSearch(searchParams);
   };
+
   const nextPage = async () => {
     if (searchPage >= searchPageMax) {
       return;
@@ -108,13 +105,7 @@ export default function Home() {
       sort_by: "average_rating:desc",
       page: searchPage + 1,
     };
-    const returnedResults = await submitSearchQuery(searchParams);
-    if (returnedResults.success) {
-      setSearchResults({
-        ...returnedResults,
-        page_max: Math.ceil(returnedResults.found / 10),
-      });
-    }
+    await submitSearch(searchParams);
   };
 
   return (
@@ -144,7 +135,6 @@ export default function Home() {
                         className="px-4 py-2 bg-orange-50 hover:bg-orange-100 hover:cursor-pointer"
                         key={idx}
                         onMouseDown={() => {
-                          console.log("clicked suggestion");
                           handleClickSuggestion(
                             aSuggestedResult.document.title
                           );
@@ -162,7 +152,7 @@ export default function Home() {
           </div>
           <div className="flex">
             <button
-              onClick={submitSearch}
+              onClick={handleClickSearch}
               className="bg-orange-100 rounded-lg px-4 py-2 hover:bg-orange-200 active:bg-orange-300 hover:cursor-pointer"
             >
               Search Books
