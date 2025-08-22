@@ -5,13 +5,4 @@ COPY package*.json ./
 RUN npm install
 COPY . .
 EXPOSE 3000
-CMD ["npm", "run", "dev"]
-
-# RUN npm run build
-
-# # Step 2: Run the built app
-# FROM node:18-alpine
-# WORKDIR /app
-# COPY --from=builder /app ./
-# EXPOSE 3000
-# CMD ["npm", "start"]
+CMD ["sh", "-c", "npm run setup:typesense && npm run dev"]

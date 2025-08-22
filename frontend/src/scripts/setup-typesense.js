@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import { tsClient } from "@/data";
+import { tsClient } from "../data/index.js";
 
 const filePath = path.join(process.cwd(), "src", "data", "books.jsonl");
 const data = fs.readFileSync(filePath, "utf8");
