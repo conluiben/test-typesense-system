@@ -119,7 +119,7 @@ export default function Home() {
 
   return (
     <div className="bg-[#fefef8] min-h-screen flex justify-center py-16">
-      <div className="flex flex-col w-4/5 max-w-[1000px] gap-4 bg-white rounded-2xl p-8 shadow-lg">
+      <div className="flex flex-col w-4/5 max-w-[1000px] gap-4 bg-white rounded-2xl max-h-[80vh] p-8 shadow-lg">
         <h1 className="text-2xl font-bold mb-4">Typesense Search</h1>
         <div className="flex gap-4">
           <div className="flex-grow">
@@ -131,6 +131,7 @@ export default function Home() {
                 value={searchQuery}
                 placeholder="Search a book title here..."
                 className="w-full px-4 py-2 shadow-lg"
+                autoComplete="off"
                 onChange={handleChangeSearch}
                 onFocus={() => setIsSearchBarFocused(true)}
                 onBlur={() => setIsSearchBarFocused(false)}
@@ -168,7 +169,7 @@ export default function Home() {
             </button>
           </div>
         </div>
-        <div>
+        <div className="flex-grow overflow-auto">
           {isTableFilled ? (
             <table className="table-fixed w-full">
               <thead>
@@ -199,7 +200,6 @@ export default function Home() {
           )}
         </div>
         <div className="flex gap-4 items-center justify-center">
-          {/* pagination */}
           <button
             className="rounded-lg px-4 py-2 bg-slate-100  hover:bg-slate-200 active:bg-slate-300 hover:cursor-pointer"
             onClick={previousPage}
