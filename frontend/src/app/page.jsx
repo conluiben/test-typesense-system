@@ -34,7 +34,6 @@ export default function Home() {
           page_max: Math.ceil(returnedResults.found / 10),
         });
       } else {
-        setSearchPage(1);
         setSearchResults({
           ...returnedResults,
           page_max: Math.ceil(returnedResults.found / 10),

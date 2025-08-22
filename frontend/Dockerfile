@@ -5,4 +5,5 @@ COPY package*.json ./
 RUN npm install
 COPY . .
 EXPOSE 3000
-CMD ["sh", "-c", "npm run setup:typesense && npm run dev"]
+RUN npm run setup:typesense
+CMD ["npm", "run", "dev"]
