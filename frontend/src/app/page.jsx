@@ -3,9 +3,13 @@ import { submitSearchQuery } from "@/actions/searchQuery";
 import { useEffect, useState } from "react";
 
 export default function Home() {
-  const [searchQuery, setSearchQuery] = useState();
+  const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState({ page_max: 1, hits: [] });
+  const [searchSuggestedResults, setSearchSuggestedResults] = useState({
+    hits: [],
+  });
   const [searchPage, setSearchPage] = useState(1);
+  const [isSearchBarFocused, setIsSearchBarFocused] = useState(false);
   const isTableFilled = searchResults.hits.length > 0;
   const searchPageMax = searchResults.page_max;
 
@@ -22,6 +26,47 @@ export default function Home() {
       query_by: "title",
       sort_by: "average_rating:desc",
       page: searchPage,
+    };
+    const returnedResults = await submitSearchQuery(searchParams);
+    if (returnedResults.success) {
+      setSearchPage(1);
+      setSearchResults({
+        ...returnedResults,
+        page_max: Math.ceil(returnedResults.found / 10),
+      });
+    }
+  };
+
+  const handleChangeSearch = async (e) => {
+    setSearchQuery(e.target.value);
+    // run search query
+    const searchParams = {
+      q: e.target.value,
+      query_by: "title",
+      sort_by: "average_rating:desc",
+      page: 1,
+      per_page: 5,
+      prefix: true,
+    };
+    const returnedResults = await submitSearchQuery(searchParams);
+    console.log("returnedResults:", returnedResults);
+    if (returnedResults.success) {
+      setSearchSuggestedResults({
+        ...returnedResults,
+        page_max: Math.ceil(returnedResults.found / 10),
+      });
+    }
+  };
+
+  const handleClickSuggestion = async (queryTitle) => {
+    setSearchQuery(queryTitle);
+    setIsSearchBarFocused(false);
+
+    const searchParams = {
+      q: queryTitle,
+      query_by: "title",
+      sort_by: "average_rating:desc",
+      page: 1,
     };
     const returnedResults = await submitSearchQuery(searchParams);
     if (returnedResults.success) {
@@ -75,17 +120,44 @@ export default function Home() {
   return (
     <div className="bg-[#fefef8] min-h-screen flex justify-center py-16">
       <div className="flex flex-col w-4/5 max-w-[1000px] gap-4 bg-white rounded-2xl p-8 shadow-lg">
-        <h1 className="text-2xl font-bold mb-8">Typesense Search</h1>
+        <h1 className="text-2xl font-bold mb-4">Typesense Search</h1>
         <div className="flex gap-4">
           <div className="flex-grow">
-            <input
-              type="text"
-              name="search-query"
-              id="search-query"
-              placeholder="Search a book here..."
-              className="w-full px-4 py-2 shadow-lg"
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
+            <div className="flex flex-col relative">
+              <input
+                type="text"
+                name="search-query"
+                id="search-query"
+                value={searchQuery}
+                placeholder="Search a book title here..."
+                className="w-full px-4 py-2 shadow-lg"
+                onChange={handleChangeSearch}
+                onFocus={() => setIsSearchBarFocused(true)}
+                onBlur={() => setIsSearchBarFocused(false)}
+              />
+              {searchQuery !== "" && isSearchBarFocused && (
+                <div className="absolute top-full w-full z-100">
+                  {searchSuggestedResults.hits.length > 0 ? (
+                    searchSuggestedResults.hits.map((aSuggestedResult, idx) => (
+                      <p
+                        className="px-4 py-2 bg-orange-50 hover:bg-orange-100 hover:cursor-pointer"
+                        key={idx}
+                        onMouseDown={() => {
+                          console.log("clicked suggestion");
+                          handleClickSuggestion(
+                            aSuggestedResult.document.title
+                          );
+                        }}
+                      >
+                        {aSuggestedResult.document.title}
+                      </p>
+                    ))
+                  ) : (
+                    <p className="px-4 py-2 bg-orange-50">No results found</p>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
           <div className="flex">
             <button
