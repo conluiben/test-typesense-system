@@ -1,0 +1,6 @@
+@import "tailwindcss";
+
+table th,
+table td {
+  @apply px-3 py-2;
+}

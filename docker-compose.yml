@@ -1,0 +1,33 @@
+version: "3.8"
+services:
+  typesense:
+    image: typesense/typesense:29.0
+    container_name: typesense
+    restart: unless-stopped
+    ports:
+      - "8108:8108"
+    volumes:
+      - ./typesense-data:/data
+    command: >
+      /opt/typesense-server
+      --data-dir /data
+      --api-key xyz
+      --listen-port 8108
+      --enable-cors
+
+  typesense-frontend:
+    build: ./frontend
+    container_name: typesense-frontend
+    restart: unless-stopped
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    ports:
+      - "3000:3000"
+    environment:
+      - TYPESENSE_HOST=typesense
+      - TYPESENSE_PORT=8108
+      - TYPESENSE_PROTOCOL=http
+      - TYPESENSE_SEARCH_KEY=YOUR_SEARCH_ONLY_KEY
+    depends_on:
+      - typesense
